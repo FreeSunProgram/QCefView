@@ -20,6 +20,7 @@
 
 #include <QCefDownloadItem.h>
 #include <QCefEvent.h>
+#include <QCefFileDialogCallback.h>
 #include <QCefQuery.h>
 #include <QCefSetting.h>
 
@@ -58,6 +59,31 @@ public:
     CefWindowOpenDispositionIgnoreAction,
   };
   Q_ENUM(CefWindowOpenDisposition)
+
+  enum CefFileDialogMode
+  {
+    ///
+    /// Requires that the file exists before allowing the user to pick it.
+    ///
+    FILE_DIALOG_OPEN = 0,
+
+    ///
+    /// Like Open, but allows picking multiple files to open.
+    ///
+    FILE_DIALOG_OPEN_MULTIPLE,
+
+    ///
+    /// Like Open, but selects a folder to open.
+    ///
+    FILE_DIALOG_OPEN_FOLDER,
+
+    ///
+    /// Allows picking a nonexistent file, and prompts to overwrite if the file
+    /// already exists.
+    ///
+    FILE_DIALOG_SAVE,
+  };
+  Q_ENUM(CefFileDialogMode);
 
 public:
   /// <summary>
@@ -454,6 +480,21 @@ protected:
   /// </summary>
   /// <returns>True to allow the close, false to cancel the close</returns>
   virtual bool onRequestCloseFromWeb();
+
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="mode"></param>
+  /// <param name="title"></param>
+  /// <param name="defaultFilePath"></param>
+  /// <param name="acceptFilters"></param>
+  /// <param name="callback"></param>
+  /// <returns></returns>
+  virtual bool onFileDialog(QCefView::CefFileDialogMode mode,
+                            const QString& title,
+                            const QString& defaultFilePath,
+                            const QStringList& acceptFilters,
+                            const QCefFileDialogCallback callback);
 
 #pragma region QWidget
 public slots:

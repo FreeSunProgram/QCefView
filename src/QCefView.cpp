@@ -327,6 +327,15 @@ QCefView::onRequestCloseFromWeb()
   return true;
 }
 
+bool
+QCefView::onFileDialog(CefFileDialogMode mode,
+                       const QString& title,
+                       const QString& defaultFilePath,
+                       const QStringList& acceptFilters,
+                       const QCefFileDialogCallback callback)
+{
+}
+
 QVariant
 QCefView::inputMethodQuery(Qt::InputMethodQuery query) const
 {
