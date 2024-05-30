@@ -273,7 +273,7 @@ QCefViewPrivate::onCefBrowserCreated(CefRefPtr<CefBrowser> browser, QWindow* win
 }
 
 bool
-QCefViewPrivate::onBeforeNewBrowserCreate(qint64 sourceFrameId,
+QCefViewPrivate::onBeforeNewBrowserCreate(const QCefFrameId& sourceFrameId,
                                           const QString& targetUrl,
                                           const QString& targetFrameName,
                                           QCefView::CefWindowOpenDisposition targetDisposition,
@@ -294,7 +294,7 @@ QCefViewPrivate::onBeforeNewBrowserCreate(qint64 sourceFrameId,
 }
 
 bool
-QCefViewPrivate::onBeforeNewPopupCreate(qint64 sourceFrameId,
+QCefViewPrivate::onBeforeNewPopupCreate(const QCefFrameId& sourceFrameId,
                                         const QString& targetUrl,
                                         QString& targetFrameName,
                                         QCefView::CefWindowOpenDisposition targetDisposition,
@@ -347,7 +347,8 @@ QCefViewPrivate::handleLoadError(CefRefPtr<CefBrowser>& browser,
   if (q->receivers(SIGNAL(loadError(int, qint64, bool, int, const QString&, const QString&))) > 0) {
     auto msg = QString::fromStdString(errorMsg);
     auto url = QString::fromStdString(failedUrl);
-    emit q->loadError(browser->GetIdentifier(), frame->GetIdentifier(), frame->IsMain(), errorCode, msg, url);
+    auto fid = FrameIdFromCefToQt(frame->GetIdentifier());
+    emit q->loadError(browser->GetIdentifier(), fid, frame->IsMain(), errorCode, msg, url);
     return true;
   }
 
@@ -1127,7 +1128,7 @@ QCefViewPrivate::browserStopLoad()
 bool
 QCefViewPrivate::triggerEvent(const QString& name,
                               const QVariantList& args,
-                              int64_t frameId /*= CefViewBrowserHandler::MAIN_FRAME*/)
+                              const QCefFrameId& frameId /*= QCefView::MainFrameID*/)
 {
   if (!name.isEmpty()) {
     return sendEventNotifyMessage(frameId, name, args);
@@ -1160,13 +1161,15 @@ QCefViewPrivate::responseQCefQuery(const int64_t query, bool success, const QStr
 }
 
 bool
-QCefViewPrivate::executeJavascript(int64_t frameId, const QString& code, const QString& url)
+QCefViewPrivate::executeJavascript(const QCefFrameId& frameId, const QString& code, const QString& url)
 {
   if (code.isEmpty())
     return false;
 
   if (pCefBrowser_) {
-    auto frame = frameId == 0 ? pCefBrowser_->GetMainFrame() : pCefBrowser_->GetFrame(frameId);
+    auto fid = FrameIdFromQtToCef(frameId);
+    auto frame =
+      frameId == QCefView::MainFrameID ? pCefBrowser_->GetMainFrame() : pCefBrowser_->GetFrameByIdentifier(fid);
     if (!frame)
       return false;
 
@@ -1188,7 +1191,7 @@ QCefViewPrivate::executeJavascript(int64_t frameId, const QString& code, const Q
 }
 
 bool
-QCefViewPrivate::executeJavascriptWithResult(int64_t frameId,
+QCefViewPrivate::executeJavascriptWithResult(const QCefFrameId& frameId,
                                              const QString& code,
                                              const QString& url,
                                              const QString& context)
@@ -1197,7 +1200,9 @@ QCefViewPrivate::executeJavascriptWithResult(int64_t frameId,
     return false;
 
   if (pClient_ && pCefBrowser_) {
-    auto frame = frameId == 0 ? pCefBrowser_->GetMainFrame() : pCefBrowser_->GetFrame(frameId);
+    auto fid = FrameIdFromQtToCef(frameId);
+    auto frame =
+      frameId == QCefView::MainFrameID ? pCefBrowser_->GetMainFrame() : pCefBrowser_->GetFrameByIdentifier(fid);
     if (!frame)
       return false;
 
@@ -1232,7 +1237,7 @@ QCefViewPrivate::notifyMoveOrResizeStarted()
 }
 
 bool
-QCefViewPrivate::sendEventNotifyMessage(int64_t frameId, const QString& name, const QVariantList& args)
+QCefViewPrivate::sendEventNotifyMessage(const QCefFrameId& frameId, const QString& name, const QVariantList& args)
 {
   if (!pClient_) {
     return false;
@@ -1262,7 +1267,8 @@ QCefViewPrivate::sendEventNotifyMessage(int64_t frameId, const QString& name, co
     arguments->SetValue(idx++, cVal);
   }
 
-  return pClient_->TriggerEvent(pCefBrowser_, frameId, msg);
+  auto fid = FrameIdFromQtToCef(frameId);
+  return pClient_->TriggerEvent(pCefBrowser_, fid, msg);
 }
 
 bool

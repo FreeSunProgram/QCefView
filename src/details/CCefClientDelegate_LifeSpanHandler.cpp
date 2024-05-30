@@ -10,13 +10,14 @@
 
 #include "QCefSettingPrivate.h"
 #include "QCefViewPrivate.h"
+#include "utils/CommonUtils.h"
 
 #define DEFAULT_POPUP_WIDTH 800
 #define DEFAULT_POPUP_HEIGHT 600
 
 bool
 CCefClientDelegate::onBeforePopup(CefRefPtr<CefBrowser>& browser,
-                                  int64_t frameId,
+                                  const CefFrameId& frameId,
                                   const std::string& targetUrl,
                                   const std::string& targetFrameName,
                                   CefLifeSpanHandler::WindowOpenDisposition targetDisposition,
@@ -33,6 +34,7 @@ CCefClientDelegate::onBeforePopup(CefRefPtr<CefBrowser>& browser,
   auto name = QString::fromStdString(targetFrameName);
   auto d = (QCefView::CefWindowOpenDisposition)targetDisposition;
   auto rc = QRect(windowInfo.bounds.x, windowInfo.bounds.y, windowInfo.bounds.width, windowInfo.bounds.height);
+  auto fid = FrameIdFromCefToQt(frameId);
 
   if (rc.width() <= 0) {
     rc.setWidth(DEFAULT_POPUP_WIDTH);
@@ -45,7 +47,7 @@ CCefClientDelegate::onBeforePopup(CefRefPtr<CefBrowser>& browser,
   QCefSetting s;
   QCefSettingPrivate::CopyFromCefBrowserSettings(&s, &settings);
 
-  if (targetDisposition == CefLifeSpanHandler::WindowOpenDisposition::WOD_NEW_POPUP) {
+  if (targetDisposition == CefLifeSpanHandler::WindowOpenDisposition::CEF_WOD_NEW_POPUP) {
     // the new browser was created from javascript, we need to conform the CEF pop-up browser lifecycle
     // because CEF need to return the new browser identity to javascript context
     Qt::ConnectionType c = pCefViewPrivate_->q_ptr->thread() == QThread::currentThread() ? Qt::DirectConnection
@@ -54,12 +56,12 @@ CCefClientDelegate::onBeforePopup(CefRefPtr<CefBrowser>& browser,
     QMetaObject::invokeMethod(
       pCefViewPrivate_,
       [&]() {
-        cancel = pCefViewPrivate_->onBeforeNewPopupCreate(frameId, //
-                                                          url,     //
-                                                          name,    //
-                                                          d,       //
-                                                          rc,      //
-                                                          s,       //
+        cancel = pCefViewPrivate_->onBeforeNewPopupCreate(fid,  //
+                                                          url,  //
+                                                          name, //
+                                                          d,    //
+                                                          rc,   //
+                                                          s,    //
                                                           disableJavascriptAccess);
         if (!cancel) {
           QCefSettingPrivate::CopyToCefBrowserSettings(&s, &settings);
@@ -74,11 +76,11 @@ CCefClientDelegate::onBeforePopup(CefRefPtr<CefBrowser>& browser,
     QMetaObject::invokeMethod(
       pCefViewPrivate_,
       [=]() {
-        pCefViewPrivate_->onBeforeNewBrowserCreate(frameId, //
-                                                   url,     //
-                                                   name,    //
-                                                   d,       //
-                                                   rc,      //
+        pCefViewPrivate_->onBeforeNewBrowserCreate(fid,  //
+                                                   url,  //
+                                                   name, //
+                                                   d,    //
+                                                   rc,   //
                                                    s);
       },
       Qt::QueuedConnection);

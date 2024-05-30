@@ -4,7 +4,7 @@ include(FetchContent)
 FetchContent_Declare(
     CefViewCore
     GIT_REPOSITORY https://github.com/CefView/CefViewCore.git
-    GIT_TAG c79fb7f5fe1e697dca3a501570daf30e794ceaeb
+    GIT_TAG 041a66cc148de33f15fa41a387f0ffaf3644198a
 )
 
 # set CEF version to be used
@@ -20,7 +20,7 @@ FetchContent_Declare(
 # "107.1.9+g1f0a21a+chromium-107.0.5304.110"  # BAD   # debugbreak - debug mode
 # "110.0.26+g732747f+chromium-110.0.5481.97"  # BAD   # TO-BE-FIXED
 # "113.3.1+g525fa10+chromium-113.0.5672.128"  # So far so good
-set(CEF_SDK_VERSION "113.3.1+g525fa10+chromium-113.0.5672.128")
+set(CEF_SDK_VERSION "122.1.13+gde5b724+chromium-122.0.6261.130")
 
 # populate CefViewCore project
 FetchContent_MakeAvailable(CefViewCore)

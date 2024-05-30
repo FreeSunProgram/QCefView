@@ -6,6 +6,7 @@
 #include <QIcon>
 
 #include "QCefViewPrivate.h"
+#include "utils/CommonUtils.h"
 
 Qt::CursorShape
 mapCursorShape(cef_cursor_type_t& type)
@@ -66,13 +67,15 @@ mapCursorShape(cef_cursor_type_t& type)
 }
 
 void
-CCefClientDelegate::addressChanged(CefRefPtr<CefBrowser>& browser, int64_t frameId, const std::string& url)
+CCefClientDelegate::addressChanged(CefRefPtr<CefBrowser>& browser, const CefFrameId& frameId, const std::string& url)
 {
   if (!IsValidBrowser(browser))
     return;
 
   auto u = QString::fromStdString(url);
-  emit pCefViewPrivate_->q_ptr->addressChanged(frameId, u);
+  auto fid = FrameIdFromCefToQt(frameId);
+
+  emit pCefViewPrivate_->q_ptr->addressChanged(fid, u);
 }
 
 void

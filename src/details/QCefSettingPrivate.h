@@ -15,6 +15,12 @@
 
 #include <QCefSetting.h>
 
+#if CEF_VERSION_MAJOR < 122
+#else
+struct QCefFrameIdConvert
+{};
+#endif
+
 class QCefSettingPrivate
 {
   Q_DECLARE_PUBLIC(QCefSetting)
@@ -39,7 +45,10 @@ public:
   std::string cursiveFontFamily_;
   std::string fantasyFontFamily_;
   std::string defaultEncoding_;
+
+#if CEF_VERSION_MAJOR < 122
   std::string acceptLanguageList_;
+#endif
 
   /* int */ QVariant windowlessFrameRate_;
   /* int */ QVariant defaultFontSize_;

@@ -149,6 +149,7 @@ public:
   /// <returns>The encoding name</returns>
   const QString defaultEncoding() const;
 
+#if CEF_VERSION_MAJOR < 122
   /// <summary>
   /// Sets the acceptable language list
   /// </summary>
@@ -160,6 +161,7 @@ public:
   /// </summary>
   /// <returns>The acceptable languate list</returns>
   const QString acceptLanguageList() const;
+#endif
 
   /// <summary>
   /// Sets the frame rate in window less mode
